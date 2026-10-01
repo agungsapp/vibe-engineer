@@ -1,0 +1,6 @@
+{
+  "name": "From Coding to Engineering",
+  "description": "Interactive keynote presentation deck for Bank Eka IT sharing session by Agung Saputra on AI, Vibe Engineering, and Shift Left Security from FEKDI x IFSE 2026.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
