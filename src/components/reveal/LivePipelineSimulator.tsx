@@ -5,18 +5,17 @@ import {
   RotateCcw,
   ShieldCheck,
   CheckCircle2,
-  AlertTriangle,
-  Bug,
   Terminal,
-  Cpu,
   ArrowRight,
   StepForward,
   FastForward,
   Clock,
   KeyRound,
   FileCode2,
-  Check,
-  Pause
+  Bug,
+  Server,
+  GitBranch,
+  Check
 } from 'lucide-react';
 import { sound } from '../../utils/audio';
 
@@ -30,7 +29,6 @@ interface PipelineStep {
   id: string;
   name: string;
   tool: string;
-  iconName: string;
   status: 'idle' | 'running' | 'success' | 'warning';
   summary: string;
   logs: string[];
@@ -38,7 +36,6 @@ interface PipelineStep {
 
 export const LivePipelineSimulator: React.FC = () => {
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(-1);
   const [stepProgress, setStepProgress] = useState<number>(0);
   const [activeSpeed, setActiveSpeed] = useState<'normal' | 'fast' | 'manual'>('normal');
@@ -49,84 +46,67 @@ export const LivePipelineSimulator: React.FC = () => {
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const logTerminalEndRef = useRef<HTMLDivElement>(null);
 
+  // Natural 5-stage pipeline familiar to IT enterprise teams
   const initialSteps: PipelineStep[] = [
     {
-      id: 'req',
-      name: 'Requirement & Context',
-      tool: 'Developer Prompt & Context Spec',
-      iconName: 'context',
+      id: 'git-push',
+      name: 'Push ke Repo (Git Push)',
+      tool: 'Git Repository · Webhook CI/CD',
       status: 'idle',
-      summary: 'Mempersiapkan context project, schema domain perbankan & rules limit harian.',
+      summary: 'Engineer telah me-review kode dari AI, memverifikasi logic, lalu melakukan push ke repository.',
       logs: [
-        '[CONTEXT] Membaca repository context & dependency tree di /src...',
-        '[SPEC] Mengidentifikasi business rules: Batas Rp 50.000.000 / 24 jam.',
-        '[GUARDRAILS] Menyiapkan boundary constraints & API contract target.',
+        '[REVIEW] Human Engineer memeriksa diff kode AI (Architecture & logic verified ✓)',
+        '[GIT] git push origin feat/transfer-limit-validation',
+        '[TRIGGER] Webhook CI/CD terpicu dari commit SHA: 8f4a21b oleh Agung Saputra',
       ],
     },
     {
-      id: 'ai-gen',
-      name: 'AI Code Generation',
-      tool: 'AI Agent Sandbox',
-      iconName: 'agent',
+      id: 'sast-scan',
+      name: 'Cek SAST & Secret Detection',
+      tool: 'Static Code Analysis (SAST)',
       status: 'idle',
-      summary: 'Menganalisis codebase, menggenerate logic validasi di src/services/transferService.ts',
+      summary: 'Pemindaian source code terhadap potensi celah keamanan & hardcoded secret/API key.',
       logs: [
-        '[AGENT] Menganalisis src/services/transferService.ts & model Account.',
-        '[CODEGEN] Menyusun validasi akumulasi nominal transfer harian.',
-        '[PATCH] Menghasilkan 42 baris kode logic baru dengan TypeScript types.',
+        '[SAST] Memindai Abstract Syntax Tree (AST) kode baru dari AI...',
+        '[SECRET-SCAN] Regex testing terhadap 142 pola hardcoded credentials & token...',
+        '[AUDIT PASSED] 0 security issue. 0 hardcoded secret terdeteksi.',
       ],
     },
     {
-      id: 'sast',
-      name: 'Secret & SAST Scan',
-      tool: 'SAST / Secret Detection (Gitleaks pattern)',
-      iconName: 'sast',
-      status: 'idle',
-      summary: 'Scanning kode terhadap kebocoran API key, hardcoded token & static analysis.',
-      logs: [
-        '[SAST] Memindai Abstract Syntax Tree (AST) untuk potensi injection.',
-        '[SECRET-SCAN] Regex testing terhadap 140 pola credentials & key tokens.',
-        '[AUDIT PASSED] 0 hardcoded secrets. 0 credentials leak terdeteksi.',
-      ],
-    },
-    {
-      id: 'trivy',
-      name: 'Dependency CVE Scan',
+      id: 'trivy-scan',
+      name: 'Cek Trivy (Vulnerability Scan)',
       tool: 'Trivy Scanner Engine',
-      iconName: 'trivy',
       status: 'idle',
-      summary: 'Memeriksa database CVE terhadap 14 library third-party yang digunakan.',
+      summary: 'Pengecekan CVE vulnerability pada package & library pihak ketiga.',
       logs: [
-        '[TRIVY] Mengunduh CVE feed terbaru dari vulnerability database.',
-        '[DEPENDENCY] Memeriksa package-lock.json (14 packages terpindai).',
-        '[RESULT] 0 Critical, 0 High, 0 Medium vulnerabilities. Clean bill.',
+        '[TRIVY] Memeriksa database CVE terbaru terhadap dependencies di package.json...',
+        '[SCANNING] 14 packages npm dianalisis terhadap known security flaws...',
+        '[PASSED] 0 Critical, 0 High vulnerabilities. Library aman.',
       ],
     },
     {
-      id: 'vitest',
-      name: 'Automated Test Suite',
-      tool: 'Vitest Harness Runner',
-      iconName: 'test',
+      id: 'testing',
+      name: 'Testing (Automated Test Suite)',
+      tool: 'Automated Vitest / Unit & Edge-Cases',
       status: 'idle',
-      summary: 'Menjalankan unit test & boundary tests untuk skenario limit transfer berulang.',
+      summary: 'Menjalankan unit test, boundary cases nominal limit, dan verifikasi logic perbankan.',
       logs: [
-        '[TEST] Menjalankan test suite: transferService.test.ts...',
-        '[EDGE-CASE] Menguji nominal tepat Rp 50.000.000 (Pass: 200 OK).',
-        '[BOUNDARY] Menguji transfer berlebih Rp 50.000.001 (Pass: 422 Rejected).',
-        '[COVERAGE] 18/18 Unit tests passed. Branch coverage 94.2%.',
+        '[TEST RUNNER] Menjalankan test suite: transferService.test.ts...',
+        '[ASSERTION] Test limit pas Rp 50.000.000 -> PASS (200 OK)',
+        '[ASSERTION] Test melebihi limit Rp 50.000.001 -> PASS (422 Limit Exceeded)',
+        '[COVERAGE] 18/18 Tests passed. Branch coverage 94.2%.',
       ],
     },
     {
-      id: 'deploy',
-      name: 'CI/CD Staging Deploy',
-      tool: 'Automated Git Pipeline',
-      iconName: 'deploy',
+      id: 'pre-prod-push',
+      name: 'Push ke Server Pre-Prod (Auto)',
+      tool: 'CI/CD Pipeline · Auto Deploy',
       status: 'idle',
-      summary: 'Build artefact terverifikasi & deployment otomatis ke sandbox staging.',
+      summary: 'Otomatis build artifact container dan push release ke server Pre-Prod Bank Eka.',
       logs: [
-        '[CI/CD] Merangkum security report & test manifest ke dalam git tag.',
-        '[CONTAINER] Build docker image staging bank-eka-service:v2.4.1.',
-        '[STAGING] Deployment sukses! Health-check endpoint /health HTTP 200 OK.',
+        '[BUILD] Build container image bank-eka-service:pre-prod-v2.4...',
+        '[DEPLOY] Push artifact ke server pre-prod.bankeka.internal...',
+        '[HEALTHCHECK] GET /health HTTP 200 OK. Deployment ke Pre-Prod sukses!',
       ],
     },
   ];
@@ -163,7 +143,7 @@ export const LivePipelineSimulator: React.FC = () => {
       setCurrentStepIndex(steps.length);
       setStepProgress(100);
       sound.playSuccessChime();
-      addLog('PIPELINE COMPLETE: Seluruh gerbang DevSecOps terverifikasi 100%!', 'success');
+      addLog('PIPELINE SELESAI: Berhasil lolos SAST, Trivy, Testing, & ter-push ke Pre-Prod!', 'success');
       return;
     }
 
@@ -172,7 +152,7 @@ export const LivePipelineSimulator: React.FC = () => {
 
     const targetStep = steps[stepIdx];
     sound.playSlideClick();
-    addLog(`Memulai Step ${stepIdx + 1}: [${targetStep.name}] via ${targetStep.tool}...`, 'info');
+    addLog(`Menjalankan [Step ${stepIdx + 1}: ${targetStep.name}]...`, 'info');
 
     // Update status to running
     setSteps((prev) =>
@@ -212,11 +192,11 @@ export const LivePipelineSimulator: React.FC = () => {
       setSteps((prev) =>
         prev.map((s, idx) => (idx === stepIdx ? { ...s, status: 'success' } : s))
       );
-      sound.playTone(440 + stepIdx * 40, 0.1);
+      sound.playTone(440 + stepIdx * 45, 0.1);
 
       if (activeSpeed === 'manual') {
         setIsRunning(false);
-        addLog(`Step ${stepIdx + 1} [${targetStep.name}] selesai. Menunggu klik 'Lanjut Step' presenter...`, 'warn');
+        addLog(`Step ${stepIdx + 1} [${targetStep.name}] selesai. Siap lanjut ke step berikutnya...`, 'warn');
       } else {
         executeStep(stepIdx + 1);
       }
@@ -226,9 +206,8 @@ export const LivePipelineSimulator: React.FC = () => {
   const handleRunPipeline = () => {
     if (isRunning) return;
     setIsRunning(true);
-    setIsPaused(false);
     setLiveLogs([]);
-    addLog(`Memulai Pipeline DevSecOps untuk prompt: "${userPrompt}"`, 'info');
+    addLog(`Memulai Pipeline CI/CD untuk requirement: "${userPrompt}"`, 'info');
     executeStep(0);
   };
 
@@ -244,7 +223,6 @@ export const LivePipelineSimulator: React.FC = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     setIsRunning(false);
-    setIsPaused(false);
     setCurrentStepIndex(-1);
     setStepProgress(0);
     setSteps(initialSteps);
@@ -257,9 +235,9 @@ export const LivePipelineSimulator: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between pb-3 border-b border-slate-800 mb-3 gap-2">
         <div className="flex items-center gap-2 text-rose-400 font-bold">
           <Terminal className="w-4 h-4" />
-          <span className="text-white">DEVSECOPS PIPELINE RUNNER</span>
+          <span className="text-white">DEVSECOPS CI/CD PIPELINE</span>
           <span className="text-[10px] px-2 py-0.5 rounded bg-rose-950/80 border border-rose-800 text-rose-300 font-normal">
-            Controlled Pacing
+            Bank Eka Enterprise Workflow
           </span>
         </div>
 
@@ -273,7 +251,7 @@ export const LivePipelineSimulator: React.FC = () => {
                 ? 'bg-rose-950 text-rose-300 border border-rose-800 font-bold'
                 : 'text-slate-400 hover:text-white'
                 }`}
-              title="Kecepatan presentasi wajar (~2.4s per step)"
+              title="Kecepatan wajar (~2.4s per step)"
             >
               <Clock className="w-3 h-3" />
               <span>Realistis (~2.4s)</span>
@@ -299,7 +277,7 @@ export const LivePipelineSimulator: React.FC = () => {
                 ? 'bg-rose-950 text-rose-300 border border-rose-800 font-bold'
                 : 'text-slate-400 hover:text-white'
                 }`}
-              title="Jalankan satu per satu dengan tombol Next"
+              title="Jalankan satu per satu secara manual"
             >
               <StepForward className="w-3 h-3" />
               <span>Step-by-Step</span>
@@ -329,26 +307,34 @@ export const LivePipelineSimulator: React.FC = () => {
               className="px-3.5 py-1.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50"
             >
               <Play className="w-3 h-3 fill-current" />
-              <span>{isRunning ? 'PIPELINE BERJALAN...' : 'EXECUTE PIPELINE'}</span>
+              <span>{isRunning ? 'PIPELINE BERJALAN...' : 'PUSH KE REPO & RUN PIPELINE'}</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Requirement Input Bar */}
-      <div className="mb-3 flex items-center gap-2 p-2 rounded-lg bg-slate-950/80 border border-slate-800">
-        <span className="text-rose-400 text-[11px] shrink-0 font-bold uppercase">Prompt Input:</span>
-        <input
-          type="text"
-          value={userPrompt}
-          onChange={(e) => setUserPrompt(e.target.value)}
-          disabled={isRunning}
-          className="bg-transparent text-white text-xs w-full focus:outline-none placeholder:text-slate-600"
-          placeholder="Tuliskan spesifikasi requirement..."
-        />
+      {/* Requirement Input Bar & Human In The Loop Notice */}
+      <div className="mb-3 space-y-1.5">
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-950/80 border border-slate-800">
+          <span className="text-rose-400 text-[11px] shrink-0 font-bold uppercase">Prompt Kebutuhan:</span>
+          <input
+            type="text"
+            value={userPrompt}
+            onChange={(e) => setUserPrompt(e.target.value)}
+            disabled={isRunning}
+            className="bg-transparent text-white text-xs w-full focus:outline-none placeholder:text-slate-600"
+            placeholder="Tuliskan requirement perbankan..."
+          />
+        </div>
+        <div className="flex items-center justify-between px-2 text-[10px] text-slate-400">
+          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+            <Check className="w-3 h-3" /> Human-in-the-Loop: Kode AI sudah direview & diverifikasi oleh Engineer
+          </span>
+          <span className="text-slate-500 font-mono">Branch: feat/ai-transfer-limit</span>
+        </div>
       </div>
 
-      {/* Main split: Pipeline steps on top, live streaming terminal on bottom */}
+      {/* Main split: 5 Pipeline steps on top, live streaming terminal on bottom */}
       <div className="flex-1 grid grid-rows-12 gap-3 min-h-0 overflow-hidden">
         {/* Step list (Rows 1-7) */}
         <div className="row-span-7 overflow-y-auto space-y-2 pr-1">
@@ -388,7 +374,7 @@ export const LivePipelineSimulator: React.FC = () => {
                         PASSED ✓
                       </span>
                     )}
-                    {!isCurrent && !isDone && <span className="text-slate-600">PENDING</span>}
+                    {!isCurrent && !isDone && <span className="text-slate-600">STANDBY</span>}
                   </div>
                 </div>
 
@@ -415,15 +401,15 @@ export const LivePipelineSimulator: React.FC = () => {
           <div className="flex items-center justify-between pb-1.5 border-b border-slate-850 mb-1.5 text-[10px] text-slate-500 font-mono">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-300 font-semibold">LIVE PIPELINE STREAM LOGS</span>
+              <span className="text-slate-300 font-semibold">LIVE PIPELINE AUDIT LOGS</span>
             </div>
-            <span>DevSecOps Audit Trail</span>
+            <span>DevSecOps Shift-Left Guarantee</span>
           </div>
 
           <div className="flex-1 overflow-y-auto font-mono text-[11px] space-y-1 pr-1">
             {liveLogs.length === 0 ? (
               <div className="text-slate-600 italic py-2">
-                Tekan "EXECUTE PIPELINE" untuk melihat simulasi eksekusi verifikasi real-time step-by-step...
+                Tekan "PUSH KE REPO & RUN PIPELINE" untuk melihat simulasi: Push ke Repo ➔ Cek SAST ➔ Cek Trivy ➔ Testing ➔ Push Pre-Prod...
               </div>
             ) : (
               liveLogs.map((log, i) => (
@@ -447,8 +433,8 @@ export const LivePipelineSimulator: React.FC = () => {
           </div>
 
           <div className="pt-1.5 border-t border-slate-850 flex items-center justify-between text-[10px] text-slate-500">
-            <span>Shift Left Security Guarantee</span>
-            <span className="text-rose-400 font-semibold">Bank Eka Verified</span>
+            <span>Target Deployment: Server Pre-Prod Bank Eka</span>
+            <span className="text-emerald-400 font-semibold">Auto-Push Verified</span>
           </div>
         </div>
       </div>

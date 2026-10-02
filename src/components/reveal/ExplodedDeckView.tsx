@@ -17,18 +17,19 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
   const [tiltY, setTiltY] = useState<number>(-18);
 
   const pipelineStages = [
-    { label: 'Requirement', note: 'Context & Scope' },
-    { label: 'AI Agent', note: 'Code Generation' },
-    { label: 'Code Review', note: 'Logic & Arch' },
-    { label: 'Test Suite', note: 'Vitest Unit' },
-    { label: 'Security Scan', note: 'SAST & Trivy' },
-    { label: 'Verified App', note: 'React 19 Prod' },
+    { label: 'AI Code Gen', note: 'Sandbox Local' },
+    { label: 'Review Manusia', note: 'Engineer Validated' },
+    { label: 'Push ke Repo', note: 'Trigger CI/CD' },
+    { label: 'Cek SAST', note: 'Secret & Code Flaws' },
+    { label: 'Cek Trivy', note: 'Dependency CVE' },
+    { label: 'Testing Otomatis', note: 'Vitest Unit' },
+    { label: 'Push Pre-Prod', note: 'Auto Deploy Server' },
   ];
 
   return (
     <div className="w-full h-full flex flex-col bg-[#05080e] relative overflow-hidden select-none text-slate-100">
       {/* Background Dev Matrix Grid */}
-      <div 
+      <div
         className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, #e11d48 1px, transparent 0)`,
@@ -57,9 +58,8 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
                 setActiveTab('pipeline');
                 sound.playSlideClick();
               }}
-              className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${
-                activeTab === 'pipeline' ? 'bg-rose-600 text-white font-bold' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${activeTab === 'pipeline' ? 'bg-rose-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                }`}
             >
               <Terminal className="w-3.5 h-3.5" />
               <span>DevSecOps Simulator</span>
@@ -69,9 +69,8 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
                 setActiveTab('tree');
                 sound.playSlideClick();
               }}
-              className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${
-                activeTab === 'tree' ? 'bg-rose-600 text-white font-bold' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${activeTab === 'tree' ? 'bg-rose-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                }`}
             >
               <Layers className="w-3.5 h-3.5" />
               <span>Virtual DOM</span>
@@ -81,9 +80,8 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
                 setActiveTab('code');
                 sound.playSlideClick();
               }}
-              className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${
-                activeTab === 'code' ? 'bg-rose-600 text-white font-bold' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${activeTab === 'code' ? 'bg-rose-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                }`}
             >
               <Code2 className="w-3.5 h-3.5" />
               <span>Source Code</span>
@@ -95,11 +93,10 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
               setIs3DView(!is3DView);
               sound.playSlideClick();
             }}
-            className={`px-3 py-1.5 rounded-lg border font-mono transition-colors flex items-center gap-1.5 ${
-              is3DView
-                ? 'bg-rose-950/60 border-rose-700 text-rose-300 font-bold'
-                : 'bg-slate-900 border-slate-800 text-slate-400'
-            }`}
+            className={`px-3 py-1.5 rounded-lg border font-mono transition-colors flex items-center gap-1.5 ${is3DView
+              ? 'bg-rose-950/60 border-rose-700 text-rose-300 font-bold'
+              : 'bg-slate-900 border-slate-800 text-slate-400'
+              }`}
           >
             <Eye className="w-3.5 h-3.5" />
             <span>{is3DView ? '3D Isometric: ON' : 'Flat View'}</span>
@@ -147,15 +144,15 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
               style={
                 is3DView
                   ? {
-                      perspective: '1200px',
-                      transformStyle: 'preserve-3d',
-                      transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(0.85)`,
-                    }
+                    perspective: '1200px',
+                    transformStyle: 'preserve-3d',
+                    transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale(0.85)`,
+                  }
                   : { transform: 'scale(0.92)' }
               }
             >
               {/* Layer 1: Background Grid & Hardware Plate */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-2xl bg-slate-950/80 border-2 border-rose-900/50 shadow-2xl flex flex-col p-6 pointer-events-none"
                 style={is3DView ? { transform: 'translateZ(-80px)' } : {}}
               >
@@ -169,7 +166,7 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
               </div>
 
               {/* Layer 2: Component Virtual DOM Wireframe */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-2xl bg-rose-950/20 border border-rose-600/40 pointer-events-none flex flex-col p-6"
                 style={is3DView ? { transform: 'translateZ(-30px)' } : {}}
               >
@@ -187,7 +184,7 @@ export const ExplodedDeckView: React.FC<ExplodedDeckViewProps> = ({ onBackToPres
               </div>
 
               {/* Layer 3: Presentation UI Surface (The PowerPoint facade) */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-2xl bg-[#0b0f17] border-2 border-slate-700 shadow-2xl flex flex-col justify-between p-6 overflow-hidden ring-4 ring-rose-500/20"
                 style={is3DView ? { transform: 'translateZ(40px)' } : {}}
               >
