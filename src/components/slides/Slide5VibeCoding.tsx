@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Lightbulb, MessageSquareText, Cpu, FileCode2, ShieldAlert, X } from 'lucide-react';
+import { Lightbulb, MessageSquareText, Cpu, FileCode2, ShieldAlert, X, Eye } from 'lucide-react';
+import { sound } from '../../utils/audio';
 
-export const Slide5VibeCoding: React.FC = () => {
+interface Slide5VibeCodingProps {
+  isRevealed?: boolean;
+  onReveal?: () => void;
+}
+
+export const Slide5VibeCoding: React.FC<Slide5VibeCodingProps> = ({
+  isRevealed = false,
+  onReveal
+}) => {
   const [isZoomed, setIsZoomed] = useState<boolean>(false);
   const [currentImg, setCurrentImg] = useState<string>('/images/vibe-coding-case.jpeg');
   const fallbackUrl = "https://i.postimg.cc/wvGNBj1n/IMG-20260925-070649-picsay.jpg";
@@ -10,6 +19,13 @@ export const Slide5VibeCoding: React.FC = () => {
   const handleImageError = () => {
     if (currentImg !== fallbackUrl) {
       setCurrentImg(fallbackUrl);
+    }
+  };
+
+  const handleTriggerReveal = () => {
+    if (onReveal) {
+      sound.playSlideClick();
+      onReveal();
     }
   };
 
@@ -22,7 +38,9 @@ export const Slide5VibeCoding: React.FC = () => {
         className="text-xs font-mono tracking-widest text-slate-500 uppercase flex items-center justify-between"
       >
         <span>05 · Fenomena Global Industri</span>
-        <span className="text-rose-400 font-mono">Case Study</span>
+        <span className="text-rose-400 font-mono">
+          {isRevealed ? 'Case Study Revealed' : 'Step 1: Konsep & Logika'}
+        </span>
       </motion.div>
 
       <div className="my-auto max-w-6xl mx-auto w-full">
@@ -44,7 +62,7 @@ export const Slide5VibeCoding: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* 2-Column Balanced Layout: Left = Logic & Inequality, Right = 100% Clean Square Image */}
+        {/* 2-Column Balanced Layout: Left = Logic & Inequality, Right = Conditional Photo / Teaser Card */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           {/* Left Column (7 cols): Rapid Flow + Inequality Cards */}
           <div className="md:col-span-7 flex flex-col justify-center space-y-4">
@@ -111,38 +129,75 @@ export const Slide5VibeCoding: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* Right Column (5 cols): The 100% Unobscured Square Image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="md:col-span-5 flex flex-col items-center justify-center"
-          >
-            {/* Clean square container - 100% free of overlays */}
-            <div
-              onClick={() => setIsZoomed(true)}
-              className="relative w-full max-w-[290px] lg:max-w-[340px] aspect-square rounded-xl overflow-hidden border border-slate-700/80 hover:border-rose-500 shadow-2xl bg-black cursor-pointer transition-all hover:scale-[1.01]"
-              title="Klik untuk memperbesar gambar"
-            >
-              <img
-                src={currentImg}
-                onError={handleImageError}
-                alt="Contoh Kasus Vibe Coding"
-                className="w-full h-full object-contain"
-                loading="eager"
-              />
-            </div>
+          {/* Right Column (5 cols): Conditional Reveal (Teaser Card -> Clean Photo) */}
+          <div className="md:col-span-5 flex flex-col items-center justify-center">
+            <AnimatePresence mode="wait">
+              {!isRevealed ? (
+                /* Step 1: Teaser / Anticipation card (Foto belum muncul agar audiens fokus ke materi dulu) */
+                <motion.div
+                  key="teaser-card"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={handleTriggerReveal}
+                  className="w-full max-w-[290px] lg:max-w-[340px] aspect-square rounded-xl border border-dashed border-slate-800 hover:border-rose-500/80 bg-slate-950/70 p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition-all shadow-xl"
+                  title="Klik atau tekan tombol panah kanan untuk melihat contoh"
+                >
+                  <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-rose-400 group-hover:scale-110 group-hover:text-rose-300 transition-all mb-3 shadow-inner">
+                    <Eye className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-white mb-1.5 uppercase tracking-wide">
+                    Studi Kasus Lapangan
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-sans leading-relaxed mb-4">
+                    Apa yang terjadi jika <span className="text-slate-200 font-semibold">Vibe Coding</span> dilepas tanpa kendali & guardrail engineering?
+                  </span>
+                  <div className="px-3.5 py-1.5 rounded-lg bg-rose-950/60 border border-rose-800/80 text-[11px] font-mono text-rose-300 font-bold flex items-center gap-2 shadow-sm group-hover:bg-rose-900/80 transition-colors">
+                    <span>Tekan</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-white font-mono text-[10px]">
+                      →
+                    </kbd>
+                    <span>untuk Reveal</span>
+                  </div>
+                </motion.div>
+              ) : (
+                /* Step 2: The 100% Unobscured Square Meme Image */
+                <motion.div
+                  key="revealed-image"
+                  initial={{ opacity: 0, scale: 0.88, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                  className="flex flex-col items-center justify-center w-full"
+                >
+                  {/* Clean square container - 100% free of overlays */}
+                  <div
+                    onClick={() => setIsZoomed(true)}
+                    className="relative w-full max-w-[290px] lg:max-w-[340px] aspect-square rounded-xl overflow-hidden border-2 border-rose-600/70 shadow-2xl bg-black cursor-pointer transition-all hover:scale-[1.01]"
+                    title="Klik untuk memperbesar gambar"
+                  >
+                    <img
+                      src={currentImg}
+                      onError={handleImageError}
+                      alt="Contoh Kasus Vibe Coding"
+                      className="w-full h-full object-contain"
+                      loading="eager"
+                    />
+                  </div>
 
-            {/* External text caption placed strictly BELOW the image frame so nothing is blocked */}
-            <div className="mt-2 text-center">
-              <span className="text-[11px] text-slate-400 font-mono block">
-                [Contoh Nyata: AI mulai ngelantur tanpa guardrail]
-              </span>
-              <span className="text-[9px] text-slate-500 font-mono">
-                (Klik gambar untuk melihat resolusi penuh)
-              </span>
-            </div>
-          </motion.div>
+                  {/* External text caption placed strictly BELOW the image frame so nothing is blocked */}
+                  <div className="mt-2 text-center">
+                    <span className="text-[11px] text-rose-300 font-mono font-semibold block">
+                      [Contoh Nyata: AI mulai ngelantur tanpa guardrail]
+                    </span>
+                    <span className="text-[9px] text-slate-500 font-mono">
+                      (Tekan <kbd className="px-1 py-0.2 rounded bg-slate-800 text-slate-300">→</kbd> lagi untuk lanjut ke slide berikutnya)
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
