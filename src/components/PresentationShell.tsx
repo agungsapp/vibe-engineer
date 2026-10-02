@@ -19,6 +19,7 @@ import {
 
 export const PresentationShell: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(1);
+  const [slide5Step, setSlide5Step] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isNotesOpen, setIsNotesOpen] = useState<boolean>(false);
   const [isOverviewOpen, setIsOverviewOpen] = useState<boolean>(false);
@@ -40,22 +41,49 @@ export const PresentationShell: React.FC = () => {
   const totalSlides = SLIDES.length;
 
   const goToNextSlide = () => {
+    // If we are on Slide 5 and meme image is not yet revealed, reveal it first!
+    if (currentSlide === 5 && slide5Step === 0) {
+      sound.playSlideClick();
+      setSlide5Step(1);
+      return;
+    }
+
     if (currentSlide < totalSlides) {
       sound.playSlideClick();
-      setCurrentSlide((prev) => prev + 1);
+      setCurrentSlide((prev) => {
+        const next = prev + 1;
+        if (next !== 5) setSlide5Step(0);
+        return next;
+      });
     }
   };
 
   const goToPrevSlide = () => {
+    // If we are on Slide 5 and meme image is revealed, step back to hiding it first
+    if (currentSlide === 5 && slide5Step === 1) {
+      sound.playSlideClick();
+      setSlide5Step(0);
+      return;
+    }
+
     if (currentSlide > 1) {
       sound.playSlideClick();
-      setCurrentSlide((prev) => prev - 1);
+      setCurrentSlide((prev) => {
+        const prevSlide = prev - 1;
+        if (prevSlide === 5) {
+          setSlide5Step(1);
+        } else {
+          setSlide5Step(0);
+        }
+        return prevSlide;
+      });
     }
   };
 
   const goToSlide = (slideId: number) => {
     if (slideId >= 1 && slideId <= totalSlides) {
       setCurrentSlide(slideId);
+      if (slideId !== 5) setSlide5Step(0);
     }
   };
 
@@ -133,7 +161,7 @@ export const PresentationShell: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide, totalSlides, isNotesOpen, isOverviewOpen]);
+  }, [currentSlide, slide5Step, totalSlides, isNotesOpen, isOverviewOpen]);
 
   // Handle subtle auto-hide controls on mouse move
   const handleMouseMove = () => {
@@ -154,11 +182,15 @@ export const PresentationShell: React.FC = () => {
       onMouseMove={handleMouseMove}
       className="relative w-screen h-screen bg-[#07090e] text-slate-100 flex items-center justify-center overflow-hidden font-sans select-none"
     >
-      {/* 16:9 Presentation Frame Container  max-w-[1520px] */}
-      <main className="relative w-full aspect-video max-h-screen bg-[#0a0e17] rounded-none md:rounded-xl shadow-2xl shadow-black/80 border-0 md:border border-slate-800/80 flex flex-col justify-between overflow-hidden">
+      {/* 16:9 Presentation Frame Container max-w-[1520px] */}
+      <main className="relative w-full  aspect-video max-h-screen bg-[#0a0e17] rounded-none md:rounded-xl shadow-2xl shadow-black/80 border-0 md:border border-slate-800/80 flex flex-col justify-between overflow-hidden">
         {/* Slide Content Viewport */}
         <div className="flex-1 w-full h-full relative overflow-hidden">
-          <SlideRenderer currentSlide={currentSlide} />
+          <SlideRenderer
+            currentSlide={currentSlide}
+            slide5Step={slide5Step}
+            onRevealSlide5={() => setSlide5Step(1)}
+          />
         </div>
 
         {/* Minimal Progress Line at Bottom */}

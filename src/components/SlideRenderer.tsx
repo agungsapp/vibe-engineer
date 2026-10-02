@@ -22,9 +22,15 @@ import { Slide19QnaAndReveal } from './slides/Slide19QnaAndReveal';
 
 interface SlideRendererProps {
   currentSlide: number;
+  slide5Step?: number;
+  onRevealSlide5?: () => void;
 }
 
-export const SlideRenderer: React.FC<SlideRendererProps> = ({ currentSlide }) => {
+export const SlideRenderer: React.FC<SlideRendererProps> = ({
+  currentSlide,
+  slide5Step = 0,
+  onRevealSlide5
+}) => {
   const renderSlide = () => {
     switch (currentSlide) {
       case 1:
@@ -36,7 +42,12 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({ currentSlide }) =>
       case 4:
         return <Slide4ThenAI />;
       case 5:
-        return <Slide5VibeCoding />;
+        return (
+          <Slide5VibeCoding
+            isRevealed={slide5Step >= 1}
+            onReveal={onRevealSlide5}
+          />
+        );
       case 6:
         return <Slide6WhatHappens />;
       case 7:
