@@ -48,7 +48,7 @@ export const SLIDES: SlideData[] = [
         title: "VIBE CODING",
         subtitle: "Era penurunan drastis hambatan produksi kode",
         speakerNotes:
-            'Istilah "Vibe Coding" ramai dibicarakan. Kita punya ide, kita prompt, AI generate code, dan aplikasinya jalan. Tapi sebagai engineer di industri perbankan, ada realita krusial: Code Terbuat ≠ Code Benar ≠ Code Secure.',
+            'Istilah "Vibe Coding" ramai dibicarakan: ide kita prompt ke AI, kode langsung jadi. Tapi lihat contoh nyata di sebelah kanan: jika vibe coding tidak di-manage dengan disiplin, AI bisa mulai "ngelantur" dan menghasilkan halusinasi logic. Di perbankan, realitanya tegas: Code Terbuat ≠ Code Benar ≠ Code Secure.',
         durationSec: 40,
     },
     {
